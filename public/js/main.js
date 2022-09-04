@@ -30050,13 +30050,13 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _store__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./store */ "./resources/js/src/store/index.js");
 /* harmony import */ var _router__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./router */ "./resources/js/src/router/index.js");
 /**
- * Created by Baharul on 12/08/2022.
+ * Created by Baharul Islam on 12/08/2022.
  */
 
 
 
 var axiosClient = axios__WEBPACK_IMPORTED_MODULE_0___default().create({
-  baseURL: 'http://127.0.0.1:8000/api',
+  baseURL: '/api',
   headers: {
     'Accept': 'application/json',
     'Content-Type': 'application/json'

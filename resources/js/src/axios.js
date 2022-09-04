@@ -1,12 +1,12 @@
 /**
- * Created by Baharul on 12/08/2022.
+ * Created by Baharul Islam on 12/08/2022.
  */
 import axios from 'axios';
 import store from './store';
 import router from './router';
 
 const axiosClient = axios.create({
-    baseURL: 'http://127.0.0.1:8000/api',
+    baseURL: '/api',
     headers: {
         'Accept': 'application/json',
         'Content-Type': 'application/json'
