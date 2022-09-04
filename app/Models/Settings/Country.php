@@ -30,7 +30,7 @@ class Country extends Model implements Auditable
     protected function countryLogo(): Attribute
     {
         return Attribute::make(
-            get: fn ($value) => Storage::url("images/" . $value),
+            get: fn ($value) => Storage::url("images" . $value),
         );
     }
     /**
