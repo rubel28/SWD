@@ -25,8 +25,8 @@ class DatabaseSeeder extends Seeder
         Model::unguard();
         Artisan::call('passport:install');
         $this->call(UserTableSeeder::class);
-        $this->call(CitiesTableSeeder::class);
-        $this->call(ProvincesTableSeeder::class);
         $this->call(CountryTableSeeder::class);
+        $this->call(ProvincesTableSeeder::class);
+        $this->call(CitiesTableSeeder::class);
     }
 }
