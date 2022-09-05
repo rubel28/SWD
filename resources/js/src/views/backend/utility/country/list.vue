@@ -62,7 +62,7 @@
                         <v-client-table :data="items" :columns="columns" :options="table_option">
 
                             <template #beforeFilter>
-                                <router-link :to="{name: 'country-add'}" class="btn me-2 btn-primary"
+                                <router-link :to="{name: 'country.add'}" class="btn me-2 btn-primary"
                                 ><svg
                                     xmlns="http://www.w3.org/2000/svg"
                                     width="24"
@@ -83,25 +83,7 @@
 
                             </template>
                             <template #action="props">
-                                <a href="javascript:" title="View" data-bs-toggle="tooltip" data-bs-placement="top"
-                                   @click="view_row(props.row)" >
-                                    <svg
-                                        xmlns="http://www.w3.org/2000/svg"
-                                        width="24"
-                                        height="24"
-                                        viewBox="0 0 24 24"
-                                        fill="none"
-                                        stroke="currentColor"
-                                        stroke-width="2"
-                                        stroke-linecap="round"
-                                        stroke-linejoin="round"
-                                        class="feather feather-eye"
-                                    >
-                                        <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
-                                        <circle cx="12" cy="12" r="3"></circle>
-                                    </svg>
-                                </a>
-                                <a href="javascript:" title="Edit" data-bs-toggle="tooltip" data-bs-placement="top">
+                                <router-link :to="{name:'country.edit', params: { id: props.row.id }}" title="Edit" data-bs-toggle="tooltip" data-bs-placement="top">
                                     <svg
                                         xmlns="http://www.w3.org/2000/svg"
                                         width="24"
@@ -116,8 +98,8 @@
                                     >
                                         <path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"></path>
                                     </svg>
-                                </a>
-                                <a href="javascript:void(0);" title="Delete" data-bs-toggle="tooltip" data-bs-placement="top">
+                                </router-link>
+                                <a href="javascript:void(0);" @click="deleteCountry(props.row.id)" title="Delete" data-bs-toggle="tooltip" data-bs-placement="top">
                                     <svg
                                         xmlns="http://www.w3.org/2000/svg"
                                         width="24"
@@ -138,7 +120,7 @@
                             <template #country_name="props">
                                 <div class="d-flex">
                                     <div class="usr-img-frame me-2 rounded-circle">
-                                        <img :src="`${props.row.country_logo}`" class="img-fluid rounded-circle" alt="avatar" />
+                                        <img :src="`${props.row.country_logo_path}`" class="img-fluid rounded-circle" alt="avatar" />
                                     </div>
                                     <p class="align-self-center mb-0 admin-name">{{ props.row.country_name }}</p>
                                 </div>
@@ -157,7 +139,8 @@
 </template>
 
 <script setup>
-import {computed, onMounted, ref} from 'vue';
+    import {computed, onMounted, ref} from 'vue';
+    import '@/assets/sass/components/custom-sweetalert.scss';
     import { useStore } from 'vuex';
 
     //pdf export
@@ -170,7 +153,7 @@ import {computed, onMounted, ref} from 'vue';
     const error = ref(null);
 
     const columns = ref(['id', 'country_name', 'country_iso','country_iso3', 'country_phone_code', 'active_status', 'action']);
-    const items = ref([]);
+    //const items = ref([]);
     const table_option = ref({
         perPage: 10,
         perPageValues: [5, 10, 20, 50],
@@ -194,43 +177,9 @@ import {computed, onMounted, ref} from 'vue';
 
     // set country data and loader to state
     const loading = computed(() => store.state.country.countries.loading);
-    const loginData = computed(() => store.state.country.countries.data);
+    const items = computed(() => store.state.country.countries.data);
     // get Login History data
     store.dispatch('country/getCountries')
-        .then(() => {
-            store.commit('country/setCountriesLoading', false);
-            items.value = loginData.value;
-            //showAlert('Signed in successfully');
-        })
-        .catch((err) => {
-            error.value = null;
-            store.commit('country/setCountriesLoading', false);
-            error.value = 'Data error or not found!';
-            //error.value = `${err.data.message}! ${err.data.data.error}`;
-        })
-
-    // Edit country
-    const view_row = (item) => {
-        alert('ID: ' + item.id + ', Name: ' + item.country_name);
-    };
-    /*onMounted(() => {
-        bind_data();
-    });
-
-    const bind_data = () => {
-        items.value = [
-            { id: 1, country_name: 'Tiger Nixon', country_iso: 'BD', country_iso3: 'BDT', country_phone_code: '88',country_status:'ACTIVE' },
-            { id: 2, country_name: 'Tiger Nixon', country_iso: 'BD', country_iso3: 'BDT', country_phone_code: '88',country_status:'ACTIVE' },
-            { id: 3, country_name: 'Tiger Nixon', country_iso: 'BD', country_iso3: 'BDT', country_phone_code: '88',country_status:'ACTIVE' },
-            { id: 4, country_name: 'Tiger Nixon', country_iso: 'BD', country_iso3: 'BDT', country_phone_code: '88',country_status:'ACTIVE' },
-            { id: 5, country_name: 'Tiger Nixon', country_iso: 'BD', country_iso3: 'BDT', country_phone_code: '88',country_status:'ACTIVE' },
-            { id: 6, country_name: 'Tiger Nixon', country_iso: 'BD', country_iso3: 'BDT', country_phone_code: '88',country_status:'ACTIVE' },
-            { id: 7, country_name: 'Tiger Nixon', country_iso: 'BD', country_iso3: 'BDT', country_phone_code: '88',country_status:'ACTIVE' },
-            { id: 8, country_name: 'Tiger Nixon', country_iso: 'BD', country_iso3: 'BDT', country_phone_code: '88',country_status:'ACTIVE' },
-            { id: 9, country_name: 'Tiger Nixon', country_iso: 'BD', country_iso3: 'BDT', country_phone_code: '88',country_status:'ACTIVE' },
-
-        ];
-    };*/
 
     const export_table = (type) => {
         let cols = columns.value.filter((d) => d != 'action');
@@ -339,4 +288,22 @@ import {computed, onMounted, ref} from 'vue';
             .map((s) => s.charAt(0).toUpperCase() + s.substring(1))
             .join(' ');
     };
+
+    function deleteCountry(id) {
+        new window.Swal({
+            title: 'Are you sure?',
+            text: "You won't be able to revert this!",
+            type: 'warning',
+            showCancelButton: true,
+            confirmButtonText: 'Delete',
+            padding: '2em'
+        }).then(result => {
+            if (result.value) {
+                store.dispatch("country/deleteCountry", id).then(() => {
+                    store.dispatch('country/getCountries')
+                });
+                new window.Swal('Deleted!', 'Country has been deleted.', 'success');
+            }
+        });
+    }
 </script>

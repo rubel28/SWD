@@ -2,6 +2,8 @@
 
 namespace App\Services\Utility;
 use File;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Str;
 use Image;
 
 class FileUploadService
@@ -30,48 +32,39 @@ class FileUploadService
      * @param $data
      * @return string|null
      */
-    public function saveImage($data)
+    public function saveImage($image,$data)
     {
-        if (isset($data['image'])) {
-            //Get image name
-            $imageName = $data['image_name'] . '.' . strtolower($data['image']->getClientOriginalExtension());
-            // make image path
-            $destinationPath = storage_path(UtilityService::$fileUploadPath.$data['destination']);
-            // Check image path available or create it
-            if (!File::exists($destinationPath)) {
-                File::makeDirectory($destinationPath, 0755, true);
-            }
+        // Check if image is valid base64 string
+        if (preg_match('/^data:image\/(\w+);base64,/', $image, $type)) {
+            // Take out the base64 encoded text without mime type
+            $image = substr($image, strpos($image, ',') + 1);
+            // Get file extension
+            $type = strtolower($type[1]); // jpg, png, gif
 
-            // Check the image is svg format. if svg no need to resize
-            if($data['image']->getClientOriginalExtension() != 'svg'){
-                // Resize big image
-                $imageWidth = Image::make($data['image']->getRealPath())->width();
-                $imageHeight = Image::make($data['image']->getRealPath())->height();
-                if(isset($data['width']) && isset($data['height'])):
-                    if($imageWidth > $imageHeight):
-                        $width = $data['width'];
-                        $height = $data['height'];
-                    else:
-                        $width = $data['height'];
-                        $height = $data['width'];
-                    endif;
-                else:
-                    $width = $imageWidth;
-                    $height = $imageHeight;
-                endif;
-                $img = Image::make($data['image']->getRealPath())->resize($width, $height);
-                $img->orientate();
-                // If there is an old image, delete it
-                $this->removeFile($imageName, $destinationPath);
-                // Else save new image
-                $img->save($destinationPath . $imageName,90);
-
-            }else{
-                $data['image']->move($destinationPath,$imageName);
+            // Check if file is an image
+            if (!in_array($type, ['jpg', 'jpeg', 'gif', 'png'])) {
+                throw new \Exception('invalid image type');
             }
-            return '/'.$data['destination'].$imageName;
+            $image = str_replace(' ', '+', $image);
+            $image = base64_decode($image);
+
+            if ($image === false) {
+                throw new \Exception('base64_decode failed');
+            }
+        } else {
+            throw new \Exception('did not match data URI with image data');
         }
+        //Get image name
+        $imageName = $data['image_name'].Str::random() . '.' . $type;
+        // make image path
+        $destinationPath = storage_path(UtilityService::$fileUploadPath.$data['destination']);
+        $relativePath = $destinationPath.$imageName;
+        // Check image path available or create it
+        if (!File::exists($destinationPath)) {
+            File::makeDirectory($destinationPath, 0755, true);
+        }
+        file_put_contents($relativePath, $image);
 
-        return null;
+        return '/'.$data['destination'].$imageName;
     }
 }

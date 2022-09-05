@@ -4,7 +4,7 @@ namespace App\Services\Utility;
 
 class UtilityService
 {
-    public static $fileUploadPath = 'app/public/images/';
+    public static $fileUploadPath = 'app/public/images';
     public static $identificationType = [
         'application_registration_card' => 'Application Registration Card',
         'birth_certificate' => 'Birth Certificate',
@@ -40,9 +40,9 @@ class UtilityService
 
 
     public static $imageUploadPath = [
-        'id_images' => 'uploaded/id_images/',
-        'profile_photo' => 'uploaded/profile_photo',
-        'country_logos' => 'uploaded/country_logos/',
+        'id_images' => '/uploaded/id_images/',
+        'profile_photo' => '/uploaded/profile_photo',
+        'country_logos' => '/uploaded/country_logos/',
     ];
     public static $countryFlagSize = [
         'width' => 256,

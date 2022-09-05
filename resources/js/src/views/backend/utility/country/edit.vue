@@ -26,15 +26,26 @@
                                     </a>
                                 </li>
                                 <li class="breadcrumb-item"><a href="/country">Country</a></li>
-                                <li class="breadcrumb-item active" aria-current="page"><span>Add New Country</span></li>
+                                <li class="breadcrumb-item active" aria-current="page"><span>Edit Country</span></li>
                             </ol>
                         </nav>
                     </div>
                 </li>
             </ul>
         </teleport>
+        <div v-if="loading" class="row layout-top-spacing">
+            <div class="col-xl-12 col-lg-12 col-md-12 col-12 layout-spacing">
+                <div class="panel br-4">
+                    <div class="panel-body loader-panel-min-height">
+                        <div class="d-flex justify-content-center mx-5 mt-3 mb-5">
+                            <div class="spinner-border text-success align-self-center loader-lg">Loading...</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
 
-        <div class="account-settings-container layout-top-spacing">
+        <div v-else class="account-settings-container layout-top-spacing">
             <div class="account-content">
                 <div class="scrollspy-example" data-spy="scroll" data-target="#account-settings-scroll" data-offset="-100">
                     <div class="row">
@@ -105,7 +116,6 @@
                                                         <label for="name"><strong>Country Name</strong></label>
                                                         <input v-model="form.country_name"
                                                                id="name" type="text"
-                                                               name="country_name"
                                                                class="form-control"
                                                                placeholder="Country Name"
                                                                ref="country_name"
@@ -120,7 +130,6 @@
                                                         <label for="iso">ISO</label>
                                                         <input v-model="form.country_iso"
                                                                id="iso" type="text"
-                                                               name="country_iso"
                                                                class="form-control"
                                                                placeholder="Country ISO"
                                                         />
@@ -132,7 +141,6 @@
                                                         <input v-model="form.country_iso3"
                                                                id="iso3" type="text"
                                                                class="form-control"
-                                                               name="country_iso3"
                                                                placeholder="Country ISO3"
                                                         />
                                                     </div>
@@ -145,7 +153,6 @@
                                                         <input v-model="form.country_phone_code"
                                                                id="country_code" type="text"
                                                                class="form-control"
-                                                               name="country_phone_code"
                                                                placeholder="Country Phone Code"
                                                         />
                                                     </div>
@@ -158,7 +165,6 @@
                                                             <input
                                                                 v-model="form.country_status"
                                                                 type="checkbox"
-                                                                name="country_status"
                                                             />
                                                             <span class="slider round"></span>
                                                         </label>
@@ -208,22 +214,23 @@
 </template>
 
 <script setup>
-import {ref, watchEffect, onMounted, watch, computed} from 'vue';
+import { ref, watchEffect, computed,onMounted, watch } from 'vue';
     import '@/assets/sass/scrollspyNav.scss';
     import '@/assets/sass/users/account-setting.scss';
     import '@/assets/sass/forms/switches.scss';
 
     import { useMeta } from '@/composables/use-meta';
     import { useStore } from "vuex";
-    import { useRouter } from "vue-router";
+    import { useRouter, useRoute } from "vue-router";
     import useValidation from "@/composables/useValidation";
     import useShowMessage from "@/composables/useShowMessage";
 
-    useMeta({ title: 'New Country' });
+    useMeta({ title: 'Edit Country' });
     const { validation,email_validate,is_submit_form } = useValidation();
     const { showMessage } = useShowMessage();
     const store = useStore();
     const router = useRouter();
+    const route = useRoute();
 
     // variable declaration
     const country_name = ref(null);
@@ -236,21 +243,43 @@ import {ref, watchEffect, onMounted, watch, computed} from 'vue';
         country_phone_code:'',
         image: '',
         country_status: true,
+        country_logo_path: '',
     });
 
     // get loader current state
     const loadingSubmitted = computed(() =>  store.state.country.buttonLoading.loading);
+    const loading = computed(() => store.state.country.country.loading);
+    const currentData = computed(() => store.state.country.country.data);
 
+    onMounted(() => {
+        store.dispatch('country/getCountry', route.params.id)
+            .then(() => {
+                store.commit('country/setCountryLoading', false);
+                form.value = currentData.value;
+                selected_file.value = currentData.value.country_logo_path;
+                //showAlert('Signed in successfully');
+            })
+            .catch((err) => {
+                error.value = null;
+                store.commit('country/setCountryLoading', false);
+                error.value = 'Data error or not found!';
+                //error.value = `${err.data.message}! ${err.data.data.error}`;
+            })
+    })
     // get data for custom validation
     watchEffect(() => {
         validateData.value.country_name = form.value.country_name;
-    })
 
-    // focus input field on page load
-    onMounted(() => {
-        country_name.value.focus();
     })
-
+    // Watch to current survey data change and when this happens we update local model
+    watch(
+        () => currentData.value,
+        (newVal, oldVal) => {
+            form.value = {
+                ...JSON.parse(JSON.stringify(newVal)),
+            };
+        }
+    );
     // get image file and imageUrl on upload
     const change_file = (ev) => {
         const file = ev.target.files[0];
@@ -269,31 +298,18 @@ import {ref, watchEffect, onMounted, watch, computed} from 'vue';
     const submit_form = () => {
         is_submit_form.value = true;
         if (validation(validateData)) {
-            store.dispatch('country/saveCountry',{...form.value}).then(({data}) => {
+            store.dispatch('country/updateCountry',{...form.value}).then(({data}) => {
                 //console.log(data.data);
                 store.commit('country/setButtonLoading', false);
-                reset_form();
                 showMessage(data.message,'success');// type => success/error
             }).catch((err) => {
                 store.commit('country/setButtonLoading', false);
+                //error.value = 'Data error!';
                 //error.value = `${err.data.message}! ${err.data.data.error}`;
             });
         }else {
             showMessage('Field Validation Error!','error');// type => success/error
         }
-    };
-
-    // Reset all reactive filed after successful insert
-    const reset_form = () => {
-        form.value.country_name = '';
-        form.value.country_iso = '';
-        form.value.country_iso3 = '';
-        form.value.country_phone_code = '';
-        form.value.country_logo = '';
-        form.value.country_status = true;
-        selected_file.value = null;
-        is_submit_form.value = false;
-        country_name.value.focus();
     };
 
 </script>

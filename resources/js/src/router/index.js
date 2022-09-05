@@ -43,8 +43,14 @@ const routes = [
     },
     {
         path: '/country/add',
-        name: 'country-add',
+        name: 'country.add',
         component: () => import('../views/backend/utility/country/add'),
+        meta: { requiresAuth: true }
+    },
+    {
+        path: '/country/:id/edit',
+        name: 'country.edit',
+        component: () => import('../views/backend/utility/country/edit'),
         meta: { requiresAuth: true }
     },
     // province

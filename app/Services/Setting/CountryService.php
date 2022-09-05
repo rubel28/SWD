@@ -5,6 +5,8 @@ namespace App\Services\Setting;
 use App\Models\Settings\Country;
 use App\Services\Utility\FileUploadService;
 use App\Services\Utility\UtilityService;
+use Illuminate\Support\Facades\File;
+use Illuminate\Support\Str;
 
 /**
  * Class CountryService.
@@ -65,6 +67,24 @@ class CountryService
         $data['width'] = UtilityService::$countryFlagSize['width'];
         $data['height'] = UtilityService::$countryFlagSize['height'];
         $img = $this->fileUploadService->saveImage($data);
+        return $img;
+    }
+
+    /**
+     * @param $image
+     * @return null|string
+     */
+    public function saveImage($image,$country)
+    {
+        $data['image_name'] = 'country_logo_';
+        $data['destination'] = UtilityService::$imageUploadPath['country_logos'];
+        $img = $this->fileUploadService->saveImage($image,$data);
+
+        // If there is an old image, delete it
+        if ($country->country_logo) {
+            $absolutePath = storage_path(UtilityService::$fileUploadPath.$country->country_logo);
+            File::delete($absolutePath);
+        }
         return $img;
     }
 

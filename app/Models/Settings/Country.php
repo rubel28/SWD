@@ -23,17 +23,6 @@ class Country extends Model implements Auditable
 
 
     /**
-     * Get the country logo.
-     *
-     * @return \Illuminate\Database\Eloquent\Casts\Attribute
-     */
-    protected function countryLogo(): Attribute
-    {
-        return Attribute::make(
-            get: fn ($value) => Storage::url("images" . $value),
-        );
-    }
-    /**
      * Interact with the country status.
      *
      * @return \Illuminate\Database\Eloquent\Casts\Attribute
@@ -41,8 +30,8 @@ class Country extends Model implements Auditable
     protected function countryStatus(): Attribute
     {
         return Attribute::make(
-            get: fn ($value) => $value == 'ACTIVE' ? 1:0,
-            set: fn ($value) => $value ? 'ACTIVE':'IN-ACTIVE',
+            get: fn ($value) => $value === 'ACTIVE' ? true:false,
+            set: fn ($value) => $value === true ? 'ACTIVE':'IN-ACTIVE',
         );
     }
 

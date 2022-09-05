@@ -7,10 +7,12 @@ use App\Http\Requests\Utility\CountryRequest;
 use App\Http\Resources\Utility\CountryResource;
 use App\Models\Settings\Country;
 use App\Services\Setting\CountryService;
+use App\Services\Utility\UtilityService;
 use App\Traits\HasApiResponse;
 use http\Message;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Log;
 
 class CountryController extends Controller
@@ -34,7 +36,7 @@ class CountryController extends Controller
      */
     public function index(Country $country)
     {
-        $countries = CountryResource::collection($country->All());
+        $countries = CountryResource::collection($country->where('deleted_at', NULL)->get());
         if($countries){
             return $this->httpSuccess($countries, 'Country data found');
         }else{
@@ -61,24 +63,19 @@ class CountryController extends Controller
      */
     public function store(CountryRequest $request)
     {
-        //Log::info($request->All());
+        //Log::info($request->all());
+        $data = $request->all();
         try {
             DB::beginTransaction();
-            $country = $this->countryService->storeCountry($request->all());
-            if ($country) {
-                // Country Flag
-                $request['country_id'] = $country->id;
-                if ($request->hasFile('country_logo')) {
-                    $image_url = $this->countryService->countryFlag($request);
-                    $country->country_logo = $image_url;
-                    $country->save();
-                }
-
-            } else {
-                return $this->httpServerError('Failed to create Country','');
+            // Check if image was given and save on local file system
+            if (isset($data['image'])) {
+                $relativePath  = $this->countryService->saveImage($data['image']);
+                $data['country_logo'] = $relativePath;
             }
+            $country = $this->countryService->storeCountry($data);
+
             DB::commit();
-            return $this->httpCreated('', 'Country successfully created');
+            return $this->httpCreated(new CountryResource($country), 'Country successfully created');
 
         } catch (\Exception $e) {
             DB::rollback();
@@ -123,18 +120,18 @@ class CountryController extends Controller
      */
     public function update(CountryRequest $request, Country $country)
     {
+        //Log::info($request->all());
+        $data = $request->all();
         try {
             DB::beginTransaction();
-            $this->countryService->updateCountry($request->all(),$country);
-            // Country Flag
-            $request['country_id'] = $country->id;
-            if ($request->hasFile('country_logo')) {
-                $image_url = $this->countryService->countryFlag($request);
-                $country->country_logo = $image_url;
-                $country->save();
+            if (isset($data['image'])) {
+                $relativePath  = $this->countryService->saveImage($data['image'],$country);
+                $data['country_logo'] = $relativePath;
             }
+            //Log::info($country);
+            $this->countryService->updateCountry($data,$country);
             DB::commit();
-            return $this->httpCreated('', 'Country successfully updated');
+            return $this->httpCreated(new CountryResource($country), 'Country successfully updated');
 
         } catch (\Exception $e) {
             DB::rollback();

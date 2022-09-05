@@ -11,6 +11,9 @@ export default {
             loading: false,
             data: {}
         },
+        buttonLoading: {
+            loading: false,
+        },
     },
     getters: {
 
@@ -28,6 +31,9 @@ export default {
         setCountryLoading: (state, loading) => {
             state.country.loading = loading;
         },
+        setButtonLoading: (state, loading) => {
+            state.buttonLoading.loading = loading;
+        },
     },
     actions: {
         getCountries({commit}){
@@ -36,38 +42,49 @@ export default {
                 .then((res) => {
                     //console.log(res.data.data)
                     commit('setCountries', res.data.data);
+                    commit('setCountriesLoading',false);
                     return res;
                 })
+                .catch((err) => {
+                    commit("setCountriesLoading", false);
+                    throw err;
+                });
         },
         getCountry({commit},id){
             commit('setCountryLoading',true);
             return axiosClient.get(`/countries/${id}`)
                 .then((res) => {
-                    console.log(res.data.data)
+                    //console.log(res.data)
                     commit('setCountry', res.data.data);
                     return res;
                 })
         },
-        saveCountry({ commit, dispatch }, country) {
-
-            delete country.image_url;
-
-            let response;
-            if (country.id) {
-                response = axiosClient
-                    .put(`/countries/${country.id}`, country)
-                    .then((res) => {
-                        commit('setCountry', res.data.data)
-                        return res;
-                    });
-            } else {
-                response = axiosClient.post("/countries", country).then((res) => {
+        saveCountry({ commit }, country) {
+            //console.log(country)
+            commit('setButtonLoading',true)
+            return axiosClient.post("/countries", country).then((res) => {
                     commit('setCountry', res.data.data)
                     return res;
                 });
+        },
+        updateCountry({ commit }, country) {
+            //console.log(country)
+            if(country.country_logo){
+                delete country.country_logo;
             }
+            commit('setButtonLoading',true)
+            let response = axiosClient.put(`/countries/${country.id}`, country).then((res) => {
+                    commit('setCountry', res.data.data)
+                    return res;
+                });
 
             return response;
+        },
+        deleteCountry({ dispatch }, id) {
+            return axiosClient.delete(`/countries/${id}`).then((res) => {
+                //dispatch('getCountries')
+                return res;
+            });
         },
     }
 }
