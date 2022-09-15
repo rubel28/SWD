@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\Utility\ProvinceRequest;
 use App\Http\Resources\Utility\ProvinceResource;
 use App\Models\Settings\Province;
+use App\Repositories\EloquentVueTables;
 use App\Services\Setting\ProvinceService;
 use App\Traits\HasApiResponse;
 use Illuminate\Support\Facades\Log;
@@ -32,12 +33,20 @@ class ProvinceController extends Controller
      */
     public function index(Province $province)
     {
-        $province = ProvinceResource::collection($province->all());
+        $u = $province->query();
+        $t = new EloquentVueTables();
+        $data = $t->get($u, ['id','province_name','province_status','country_id']);
+        $city = ProvinceResource::collection($data['data']->get());
+        return [
+            'data' => $city,
+            'count' => $data['count'],
+        ];
+        /*$province = ProvinceResource::collection($province->all());
         if($province){
             return $this->httpSuccess($province, 'Province data found');
         }else{
             return $this->httpNotFoundError('Province data not found','');
-        }
+        }*/
     }
 
     /**

@@ -26,8 +26,13 @@ export default {
                 .then((res) => {
                     //console.log(res.data.data)
                     commit('setLoginHistory', res.data.data);
+                    commit("setLoginHistoryLoading", false);
                     return res;
                 })
+                .catch((err) => {
+                    commit("setLoginHistoryLoading", false);
+                    throw err;
+                });
         },
     }
 }

@@ -36,7 +36,7 @@ class CountryController extends Controller
      */
     public function index(Country $country)
     {
-        $countries = CountryResource::collection($country->where('deleted_at', NULL)->get());
+        return $countries = CountryResource::collection($country->where('deleted_at', NULL)->get());
         if($countries){
             return $this->httpSuccess($countries, 'Country data found');
         }else{
@@ -63,7 +63,7 @@ class CountryController extends Controller
      */
     public function store(CountryRequest $request)
     {
-        //Log::info($request->all());
+        Log::info($request->all());
         $data = $request->all();
         try {
             DB::beginTransaction();

@@ -74,14 +74,14 @@ class CountryService
      * @param $image
      * @return null|string
      */
-    public function saveImage($image,$country)
+    public function saveImage($image,$country = null)
     {
         $data['image_name'] = 'country_logo_';
         $data['destination'] = UtilityService::$imageUploadPath['country_logos'];
         $img = $this->fileUploadService->saveImage($image,$data);
 
         // If there is an old image, delete it
-        if ($country->country_logo) {
+        if (isset($country->country_logo) && $country->country_logo) {
             $absolutePath = storage_path(UtilityService::$fileUploadPath.$country->country_logo);
             File::delete($absolutePath);
         }

@@ -83,7 +83,7 @@
     const error = ref(null);
 
     const columns = ref(['user_name', 'mobile_number','browser', 'iP', 'address', 'mac_address','login_status','date']);
-    const items = ref([]);
+    //const items = ref([]);
     const table_option = ref({
         perPage: 10,
         perPageValues: [5, 10, 20, 50],
@@ -107,31 +107,12 @@
 
     // set Login history data and loader to state
     const loading = computed(() => store.state.loginHistory.loginHistory.loading);
-    const loginData = computed(() => store.state.loginHistory.loginHistory.data);
+    const items = computed(() => store.state.loginHistory.loginHistory.data);
     // get Login History data
-    store.dispatch('loginHistory/getLoginHistory')
-        .then(() => {
-            store.commit('loginHistory/setLoginHistoryLoading', false);
-            items.value = loginData.value;
-            //showAlert('Signed in successfully');
-        })
-        .catch((err) => {
-            error.value = null;
-            store.commit('loginHistory/setLoginHistoryLoading', false);
-            error.value = 'Data error or not found!';
-            //error.value = `${err.data.message}! ${err.data.data.error}`;
-        })
+    onMounted(() => {
+        store.dispatch('loginHistory/getLoginHistory')
+    })
 
-    /*onMounted(() => {
-        bind_data();
-    });
-    const bind_data = () => {
-        items.value = [
-            { user_name: 'Tiger Nixon', mobile_number: '65012222333', browser: 'nixon@abc.com',address:'Singapore', iP: '50.000', mac_address: 'Salary', login_status: 'Salary',date:'00.33.33' },
-            { user_name: 'Tiger Nixon', mobile_number: '65012222333', browser: 'nixon@abc.com',address:'Singapore', iP: '50.000', mac_address: 'Salary', login_status: 'Salary',date:'00.33.33' },
-
-        ];
-    };*/
 
     const export_table = (type) => {
         let cols = columns.value.filter((d) => d);

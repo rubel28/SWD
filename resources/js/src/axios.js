@@ -14,7 +14,7 @@ const axiosClient = axios.create({
 })
 
 axiosClient.interceptors.request.use(config => {
-    const token = sessionStorage.getItem("TOKEN");
+    const token = localStorage.getItem("TOKEN");
     if (token) {
         config.headers.common["Authorization"] = `Bearer ${token}`;
     }
@@ -39,12 +39,12 @@ axiosClient.interceptors.response.use(response => {
                 break;
             case 401:
                 store.state.login.user.token = null;
-                sessionStorage.removeItem('TOKEN')
+                localStorage.removeItem('TOKEN')
                 router.push({name:'Login'})
                 break;
             case 403:
                 store.state.login.user.token = null;
-                sessionStorage.removeItem('TOKEN')
+                localStorage.removeItem('TOKEN')
                 router.push({name:'Login'})
                 break;
             case 404:

@@ -5,7 +5,7 @@ export default {
     state: {
         user: {
             data: {},
-            token: sessionStorage.getItem("TOKEN"),
+            token: localStorage.getItem("TOKEN"),
             //token: null,
         },
         loginSubmit: {
@@ -19,14 +19,14 @@ export default {
         logout: (state) => {
             state.user.token = null;
             state.user.data = {};
-            sessionStorage.removeItem("TOKEN");
+            localStorage.removeItem("TOKEN");
         },
         setUser: (state, user) => {
             state.user.data = user;
         },
         setToken: (state, token) => {
             state.user.token = token;
-            sessionStorage.setItem('TOKEN', token);
+            localStorage.setItem('TOKEN', token);
         },
         setLoginSubmitLoading: (state, loading) => {
             state.loginSubmit.loading = loading;

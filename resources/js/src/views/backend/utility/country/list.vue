@@ -178,8 +178,10 @@
     // set country data and loader to state
     const loading = computed(() => store.state.country.countries.loading);
     const items = computed(() => store.state.country.countries.data);
-    // get Login History data
-    store.dispatch('country/getCountries')
+    // country History data
+    onMounted(() => {
+        store.dispatch('country/getCountries')
+    })
 
     const export_table = (type) => {
         let cols = columns.value.filter((d) => d != 'action');

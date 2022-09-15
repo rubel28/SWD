@@ -18,8 +18,11 @@ class CityResource extends JsonResource
             'id' => $this->id,
             'city_name' => $this->city_name,
             'city_status' => $this->city_status,
-            'province_name' => $this->province->province_name,
-            'province_id' => $this->province->id,
+            'active_status' => $this->city_status ? 'ACTIVE':'IN-ACTIVE',
+            'province_name' => isset($this->province)?$this->province->province_name:'',
+            'province_id' => isset($this->province)?$this->province->id:'',
+            'country_name' => isset($this->province->country)?$this->province->country->country_name:'',
+            'country_id' => isset($this->province->country)?$this->province->country->id:'',
         ];
     }
 }

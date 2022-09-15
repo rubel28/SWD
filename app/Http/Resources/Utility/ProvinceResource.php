@@ -18,8 +18,9 @@ class ProvinceResource extends JsonResource
             'id' => $this->id,
             'province_name' => $this->province_name,
             'province_status' => $this->province_status,
-            'country_name' => $this->country->country_name,
-            'country_id' => $this->country->id,
+            'active_status' => $this->province_status ? 'ACTIVE':'IN-ACTIVE',
+            'country_name' => isset($this->country)?$this->country->country_name:'',
+            'country_id' => isset($this->country)?$this->country->id:'',
         ];
     }
 }

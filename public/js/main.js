@@ -30063,7 +30063,7 @@ var axiosClient = axios__WEBPACK_IMPORTED_MODULE_0___default().create({
   }
 });
 axiosClient.interceptors.request.use(function (config) {
-  var token = sessionStorage.getItem("TOKEN");
+  var token = localStorage.getItem("TOKEN");
 
   if (token) {
     config.headers.common["Authorization"] = "Bearer ".concat(token);
@@ -30088,7 +30088,7 @@ axiosClient.interceptors.response.use(function (response) {
 
       case 401:
         _store__WEBPACK_IMPORTED_MODULE_1__["default"].state.login.user.token = null;
-        sessionStorage.removeItem('TOKEN');
+        localStorage.removeItem('TOKEN');
         _router__WEBPACK_IMPORTED_MODULE_2__["default"].push({
           name: 'Login'
         });
@@ -30096,7 +30096,7 @@ axiosClient.interceptors.response.use(function (response) {
 
       case 403:
         _store__WEBPACK_IMPORTED_MODULE_1__["default"].state.login.user.token = null;
-        sessionStorage.removeItem('TOKEN');
+        localStorage.removeItem('TOKEN');
         _router__WEBPACK_IMPORTED_MODULE_2__["default"].push({
           name: 'Login'
         });
@@ -30411,9 +30411,18 @@ var routes = [//Auth
   }
 }, {
   path: '/country/add',
-  name: 'country-add',
+  name: 'country.add',
   component: function component() {
     return __webpack_require__.e(/*! import() */ "resources_js_src_views_backend_utility_country_add_vue").then(__webpack_require__.bind(__webpack_require__, /*! ../views/backend/utility/country/add */ "./resources/js/src/views/backend/utility/country/add.vue"));
+  },
+  meta: {
+    requiresAuth: true
+  }
+}, {
+  path: '/country/:id/edit',
+  name: 'country.edit',
+  component: function component() {
+    return __webpack_require__.e(/*! import() */ "resources_js_src_views_backend_utility_country_edit_vue").then(__webpack_require__.bind(__webpack_require__, /*! ../views/backend/utility/country/edit */ "./resources/js/src/views/backend/utility/country/edit.vue"));
   },
   meta: {
     requiresAuth: true
@@ -30673,7 +30682,7 @@ __webpack_require__.r(__webpack_exports__);
   state: {
     user: {
       data: {},
-      token: sessionStorage.getItem("TOKEN") //token: null,
+      token: localStorage.getItem("TOKEN") //token: null,
 
     },
     loginSubmit: {
@@ -30685,14 +30694,14 @@ __webpack_require__.r(__webpack_exports__);
     logout: function logout(state) {
       state.user.token = null;
       state.user.data = {};
-      sessionStorage.removeItem("TOKEN");
+      localStorage.removeItem("TOKEN");
     },
     setUser: function setUser(state, user) {
       state.user.data = user;
     },
     setToken: function setToken(state, token) {
       state.user.token = token;
-      sessionStorage.setItem('TOKEN', token);
+      localStorage.setItem('TOKEN', token);
     },
     setLoginSubmitLoading: function setLoginSubmitLoading(state, loading) {
       state.loginSubmit.loading = loading;
@@ -30759,7 +30768,11 @@ __webpack_require__.r(__webpack_exports__);
       return _axios__WEBPACK_IMPORTED_MODULE_0__["default"].get('/user-login-histories').then(function (res) {
         //console.log(res.data.data)
         commit('setLoginHistory', res.data.data);
+        commit("setLoginHistoryLoading", false);
         return res;
+      })["catch"](function (err) {
+        commit("setLoginHistoryLoading", false);
+        throw err;
       });
     }
   }
@@ -30790,6 +30803,9 @@ __webpack_require__.r(__webpack_exports__);
     country: {
       loading: false,
       data: {}
+    },
+    buttonLoading: {
+      loading: false
     }
   },
   getters: {},
@@ -30805,6 +30821,9 @@ __webpack_require__.r(__webpack_exports__);
     },
     setCountryLoading: function setCountryLoading(state, loading) {
       state.country.loading = loading;
+    },
+    setButtonLoading: function setButtonLoading(state, loading) {
+      state.buttonLoading.loading = loading;
     }
   },
   actions: {
@@ -30814,37 +30833,52 @@ __webpack_require__.r(__webpack_exports__);
       return _axios__WEBPACK_IMPORTED_MODULE_0__["default"].get('/countries').then(function (res) {
         //console.log(res.data.data)
         commit('setCountries', res.data.data);
+        commit('setCountriesLoading', false);
         return res;
+      })["catch"](function (err) {
+        commit("setCountriesLoading", false);
+        throw err;
       });
     },
     getCountry: function getCountry(_ref2, id) {
       var commit = _ref2.commit;
       commit('setCountryLoading', true);
       return _axios__WEBPACK_IMPORTED_MODULE_0__["default"].get("/countries/".concat(id)).then(function (res) {
-        console.log(res.data.data);
+        //console.log(res.data)
         commit('setCountry', res.data.data);
         return res;
       });
     },
     saveCountry: function saveCountry(_ref3, country) {
-      var commit = _ref3.commit,
-          dispatch = _ref3.dispatch;
-      delete country.image_url;
-      var response;
+      var commit = _ref3.commit;
+      //console.log(country)
+      commit('setButtonLoading', true);
+      return _axios__WEBPACK_IMPORTED_MODULE_0__["default"].post("/countries", country).then(function (res) {
+        commit('setCountry', res.data.data);
+        return res;
+      });
+    },
+    updateCountry: function updateCountry(_ref4, country) {
+      var commit = _ref4.commit;
 
-      if (country.id) {
-        response = _axios__WEBPACK_IMPORTED_MODULE_0__["default"].put("/countries/".concat(country.id), country).then(function (res) {
-          commit('setCountry', res.data.data);
-          return res;
-        });
-      } else {
-        response = _axios__WEBPACK_IMPORTED_MODULE_0__["default"].post("/countries", country).then(function (res) {
-          commit('setCountry', res.data.data);
-          return res;
-        });
+      //console.log(country)
+      if (country.country_logo) {
+        delete country.country_logo;
       }
 
+      commit('setButtonLoading', true);
+      var response = _axios__WEBPACK_IMPORTED_MODULE_0__["default"].put("/countries/".concat(country.id), country).then(function (res) {
+        commit('setCountry', res.data.data);
+        return res;
+      });
       return response;
+    },
+    deleteCountry: function deleteCountry(_ref5, id) {
+      var dispatch = _ref5.dispatch;
+      return _axios__WEBPACK_IMPORTED_MODULE_0__["default"]["delete"]("/countries/".concat(id)).then(function (res) {
+        //dispatch('getCountries')
+        return res;
+      });
     }
   }
 });
@@ -68772,7 +68806,7 @@ module.exports = JSON.parse('{"dashboard":"仪表盘","sales":"销售量","analy
 /******/ 		// This function allow to reference async chunks
 /******/ 		__webpack_require__.u = (chunkId) => {
 /******/ 			// return url for filenames based on template
-/******/ 			return "js/chunks/" + chunkId + "." + {"resources_js_src_views_backend_user_list_vue":"ac7599f846c6080d","resources_js_src_views_backend_user_add_vue":"bd9629fcc2d1d429","resources_js_src_views_backend_user_user_manage_login_history_vue":"aed4fb33aae74b39","resources_js_src_views_backend_utility_country_list_vue":"36ec7ddeb6f470cc","resources_js_src_views_backend_utility_country_add_vue":"7a21e39338cce0a1","resources_js_src_views_backend_error_error404_vue":"c484cd9519247ced","node_modules_html2canvas_dist_html2canvas_js":"5475dc17eb928a5a","node_modules_dompurify_dist_purify_js":"df6c40cb24984dc9","node_modules_canvg_lib_index_es_js":"a77678f0c8eeac90"}[chunkId] + ".js";
+/******/ 			return "js/chunks/" + chunkId + "." + {"resources_js_src_views_backend_user_list_vue":"ac7599f846c6080d","resources_js_src_views_backend_user_add_vue":"bd9629fcc2d1d429","resources_js_src_views_backend_user_user_manage_login_history_vue":"9b657f0ff4a6f935","resources_js_src_views_backend_utility_country_list_vue":"7bc5ce1289ac3e3f","resources_js_src_views_backend_utility_country_add_vue":"6e57b169bc70bee5","resources_js_src_views_backend_utility_country_edit_vue":"9bedb6de4376c93b","resources_js_src_views_backend_error_error404_vue":"c484cd9519247ced","node_modules_html2canvas_dist_html2canvas_js":"5475dc17eb928a5a","node_modules_dompurify_dist_purify_js":"df6c40cb24984dc9","node_modules_canvg_lib_index_es_js":"a77678f0c8eeac90"}[chunkId] + ".js";
 /******/ 		};
 /******/ 	})();
 /******/ 	
