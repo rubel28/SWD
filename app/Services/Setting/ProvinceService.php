@@ -2,17 +2,27 @@
 
 namespace App\Services\Setting;
 
+use App\Http\Resources\Utility\ProvinceResource;
 use App\Models\Settings\Province;
+use App\Repositories\EloquentVueTables;
 
 /**
  * Class ProvinceService.
  */
 class ProvinceService
 {
+    /**
+     * @var EloquentVueTables
+     */
+    private $eloquentVueTables;
 
-    public function __construct()
+    /**
+     * ProvinceService constructor.
+     * @param EloquentVueTables $eloquentVueTables
+     */
+    public function __construct(EloquentVueTables $eloquentVueTables)
     {
-
+        $this->eloquentVueTables = $eloquentVueTables;
     }
     /**
      * @return void
@@ -57,5 +67,30 @@ class ProvinceService
             throw new \Exception('Failed to delete Province');
         }
 
+    }
+
+    /**
+     * @return array
+     */
+    public function getProvinces()
+    {
+        $query = Province::query();
+        $query->leftJoin('countries', 'countries.id', '=', 'provinces.country_id');
+        $fields = ['provinces.id','province_name','country_name','province_status','country_id'];
+        $data = $this->eloquentVueTables->get($query, $fields);
+        $provinces = ProvinceResource::collection($data['data']->get());
+        return [
+            'data' => $provinces,
+            'count' => $data['count'],
+        ];
+    }
+
+    /**
+     * @return \Illuminate\Http\Resources\Json\AnonymousResourceCollection
+     */
+    public function selectBoxProvinceList($id)
+    {
+        $data = Province::where('country_id', '=',$id)->where('deleted_at', NULL);
+        return ProvinceResource::collection($data->get());
     }
 }

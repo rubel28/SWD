@@ -3,10 +3,12 @@
 namespace App\Repositories;
 
 use Carbon\Carbon;
+use Illuminate\Support\Facades\Log;
 
 class EloquentVueTables implements VueTablesInterface
 {
     public function get($model, array $fields) {
+        //Log::info(request()->only(['query', 'limit', 'page', 'orderBy', 'ascending', 'byColumn']));
         extract(request()->only(['query', 'limit', 'page', 'orderBy', 'ascending', 'byColumn']));
         $data = $model->select($fields);
 

@@ -25,7 +25,7 @@ class City extends Model implements Auditable
      *
      * @return \Illuminate\Database\Eloquent\Casts\Attribute
      */
-    protected function provinceStatus(): Attribute
+    protected function cityStatus(): Attribute
     {
         return Attribute::make(
             get: fn ($value) => $value === 'ACTIVE',

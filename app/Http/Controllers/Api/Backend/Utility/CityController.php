@@ -33,21 +33,7 @@ class CityController extends Controller
      */
     public function index()
     {
-        $u = City::query();
-        $t = new EloquentVueTables();
-        $data = $t->get($u, ['id','city_name','city_status','province_id']);
-        $city = CityResource::collection($data['data']->get());
-        return [
-            'data' => $city,
-            'count' => $data['count'],
-        ];
-        //return $city->with('province')->with('country')->paginate(20);
-        /*$city = CityResource::collection($city->paginate(20));
-        if($city){
-            return $this->httpSuccess($city, 'City data found');
-        }else{
-            return $this->httpNotFoundError('City data not found','');
-        }*/
+        return $this->cityService->getCity();
     }
 
     /**

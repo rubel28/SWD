@@ -2,7 +2,9 @@
 
 namespace App\Services\Setting;
 
+use App\Http\Resources\Utility\CountryResource;
 use App\Models\Settings\Country;
+use App\Repositories\EloquentVueTables;
 use App\Services\Utility\FileUploadService;
 use App\Services\Utility\UtilityService;
 use Illuminate\Support\Facades\File;
@@ -20,12 +22,19 @@ class CountryService
     private $fileUploadService;
 
     /**
+     * @var EloquentVueTables
+     */
+    private $eloquentVueTables;
+
+    /**
      * CountryService constructor.
      * @param FileUploadService $fileUploadService
+     * @param EloquentVueTables $eloquentVueTables
      */
-    public function __construct(FileUploadService $fileUploadService)
+    public function __construct(FileUploadService $fileUploadService,EloquentVueTables $eloquentVueTables)
     {
         $this->fileUploadService = $fileUploadService;
+        $this->eloquentVueTables = $eloquentVueTables;
     }
     /**
      * @return void
@@ -104,5 +113,29 @@ class CountryService
             //throw new \Exception('Failed to delete Country');
         }
 
+    }
+
+    /**
+     * @return array
+     */
+    public function getCountries()
+    {
+        $query = Country::query();
+        $fields = ['id','country_name','country_iso','country_iso3','country_num_code','country_phone_code',
+            'country_logo','country_status'];
+        $data = $this->eloquentVueTables->get($query, $fields);
+        $countries = CountryResource::collection($data['data']->get());
+        return [
+            'data' => $countries,
+            'count' => $data['count'],
+        ];
+    }
+
+    /**
+     * @return \Illuminate\Http\Resources\Json\AnonymousResourceCollection
+     */
+    public function selectBoxCountryList()
+    {
+        return CountryResource::collection(Country::where('deleted_at', NULL)->get());
     }
 }

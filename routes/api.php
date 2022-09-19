@@ -19,8 +19,10 @@ Route::middleware('auth:api')->group( function () {
     Route::post('/logout',[AuthController::class,'logout']);
     Route::resource('user-login-histories', UserLoginHistoryController::class);
     Route::resource('countries',\App\Http\Controllers\Api\Backend\Utility\CountryController::class);
+    Route::get('/select-box-countries',[\App\Http\Controllers\Api\Backend\Utility\CountryController::class,'selectBoxCountryList']);
     Route::apiResource('cities',\App\Http\Controllers\Api\Backend\Utility\CityController::class);
     Route::apiResource('provinces',\App\Http\Controllers\Api\Backend\Utility\ProvinceController::class);
+    Route::get('/provinces-by-country/{id}',[\App\Http\Controllers\Api\Backend\Utility\ProvinceController::class,'selectBoxProvinceList']);
     //Route::get('/user-login-history',[UserLoginHistoryController::class,'index']);
 });
 Route::post('login', [AuthController::class, 'login']);

@@ -9,6 +9,7 @@ use App\Models\Settings\Province;
 use App\Repositories\EloquentVueTables;
 use App\Services\Setting\ProvinceService;
 use App\Traits\HasApiResponse;
+use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Log;
 
 class ProvinceController extends Controller
@@ -29,31 +30,18 @@ class ProvinceController extends Controller
      * Display a listing of the resource.
      *
      * @param Province $province
-     * @return \Illuminate\Http\Response
+     * @return Response
      */
     public function index(Province $province)
     {
-        $u = $province->query();
-        $t = new EloquentVueTables();
-        $data = $t->get($u, ['id','province_name','province_status','country_id']);
-        $city = ProvinceResource::collection($data['data']->get());
-        return [
-            'data' => $city,
-            'count' => $data['count'],
-        ];
-        /*$province = ProvinceResource::collection($province->all());
-        if($province){
-            return $this->httpSuccess($province, 'Province data found');
-        }else{
-            return $this->httpNotFoundError('Province data not found','');
-        }*/
+        return $this->provinceService->getProvinces();
     }
 
     /**
      * Store a newly created resource in storage.
      *
      * @param  ProvinceRequest  $request
-     * @return \Illuminate\Http\Response
+     * @return Response
      */
     public function store(ProvinceRequest $request)
     {
@@ -70,7 +58,7 @@ class ProvinceController extends Controller
      * Display the specified resource.
      *
      * @param  Province $province
-     * @return \Illuminate\Http\Response
+     * @return Response
      */
     public function show(Province $province)
     {
@@ -85,9 +73,9 @@ class ProvinceController extends Controller
     /**
      * Update the specified resource in storage.
      *
-     * @param  \Illuminate\Http\Request  $request
-     * @param  int  $id
-     * @return \Illuminate\Http\Response
+     * @param ProvinceRequest $request
+     * @param Province $province
+     * @return Response
      */
     public function update(ProvinceRequest $request, Province $province)
     {
@@ -104,11 +92,26 @@ class ProvinceController extends Controller
      * Remove the specified resource from storage.
      *
      * @param  Province $province
-     * @return \Illuminate\Http\Response
+     * @return Response
      */
     public function destroy(Province $province)
     {
         $this->provinceService->deleteProvince($province);
         return $this->httpSuccess('', 'Province successfully deleted');
+    }
+
+    /**
+     * Display a listing of the resource.
+     *
+     * @return Response
+     */
+    public function selectBoxProvinceList($id)
+    {
+        try {
+            return $this->provinceService->selectBoxProvinceList($id);
+        }catch (\Exception $e){
+            return $this->httpServerError('Failed to get Province',$e->getMessage());
+        }
+
     }
 }
